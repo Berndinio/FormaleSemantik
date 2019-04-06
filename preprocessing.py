@@ -28,7 +28,8 @@ class DataProcessing:
         processed = 0
         allLength = 0
         maxLength = 0
-        unknownWords = 0
+        unknownWords = set()
+        unknownWordsCount = 0
         for key in rawData.keys():
             allLength += len(rawData[key])
             for sample in rawData[key]:
@@ -45,7 +46,7 @@ class DataProcessing:
             for sample in rawData[key]:
                 processed +=1
                 if(processed%1000 == 0):
-                    Variables.logger.info("Processing sample "+str(processed)+"/"+str(allLength)+", unknownWords:"+str(unknownWords))
+                    Variables.logger.info("Processing sample "+str(processed)+"/"+str(allLength)+", #unknownWords:"+str(len(unknownWords))+", total unknownWords:"+str(len(unknownWordsCount)))
                 tokens = " ".join(sample["tokens"])
                 tokens = strip_numeric(tokens)
                 tokens = strip_punctuation(tokens)
@@ -69,8 +70,8 @@ class DataProcessing:
                         vector = self.word2Vec[word]
                         finalSamples[processed-1,:,2+x] = torch.from_numpy(vector)
                     except KeyError:
-                        #Variables.logger.debug("Word '"+word+"' not in word2vec.")
-                        unknownWords+=1
+                        unknownWords.add(word)
+                        unknownWordsCount += 1
                     except:
                         Variables.logger.warning("Something bad happened, we dont know what!")
 
