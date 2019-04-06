@@ -28,13 +28,14 @@ class DataProcessing:
         processed = 0
         allLength = 0
         maxLength = 0
+        unknownWords = 0
         for key in rawData.keys():
             allLength += len(rawData[key])
             for sample in rawData[key]:
                 if len(sample["tokens"])>maxLength:
                     maxLength = len(sample["tokens"])
         Variables.logger.info("Dataset size:"+str(allLength)+", Maximum sentence length:"+str(maxLength))
-        finalSamples = torch.zeros(allLength,100,maxLength+3)
+        finalSamples = torch.zeros(allLength,300,maxLength+3)
 
         #process samples
         for key in rawData.keys():
@@ -44,7 +45,7 @@ class DataProcessing:
             for sample in rawData[key]:
                 processed +=1
                 if(processed%1000 == 0):
-                    Variables.logger.info("Processing sample "+str(processed)+"/"+str(allLength))
+                    Variables.logger.info("Processing sample "+str(processed)+"/"+str(allLength)+", unknownWords:"+str(unknownWords))
                 tokens = " ".join(sample["tokens"])
                 tokens = strip_numeric(tokens)
                 tokens = strip_punctuation(tokens)
@@ -63,13 +64,18 @@ class DataProcessing:
                 finalSamples[processed-1,0,0] = self.objectSubjects.index(subject)
                 finalSamples[processed-1,0,1] = self.objectSubjects.index(object)
                 finalSamples[processed-1,0,maxLength+2] = self.relations.index(relation)
-                for x, word in enumerate(tokens.split(" ")):
+                for x, word in enumerate(tokens.split(" "), 0):
                     try:
                         vector = self.word2Vec[word]
+                        finalSamples[processed-1,:,2+x] = torch.from_numpy(vector)
+                    except KeyError:
+                        #Variables.logger.debug("Word '"+word+"' not in word2vec.")
+                        unknownWords+=1
                     except:
-                        #Variables.logger.warning("Word '"+word+"' not in word2vec.")
-                        pass
+                        Variables.logger.warning("Something bad happened, we dont know what!")
 
+
+        return finalSamples
 
 
     def saveSamples(self):
