@@ -11,15 +11,21 @@ import re
 from Variables import Variables
 
 class DataProcessing:
-    def __init__(self):
+    def __init__(self, fPrefix=None):
         Variables.logger.info("Loading Word2Vec")
         #throws KeyError if undefined
         #self.word2Vec = gensim.models.KeyedVectors.load_word2vec_format('models/GoogleNews-vectors-negative300.bin', binary=True)
         self.word2VecDimensions = 300
         Variables.logger.info("Finished Word2Vec loading")
 
-        self.objectSubjects = []
-        self.relations = []
+        if fPrefix is None:
+            self.objectSubjects = []
+            self.relations = []
+            self.samples = None
+        else:
+            self.objectSubjects = torch.save(samples, fPrefix+"-samples.pt")
+            self.relations = torch.save(samples, fPrefix+"-objectSubjects.pt")
+            self.samples = torch.save(samples, fPrefix+"-relations.pt")
 
     def loadJson(self, fName):
         f = open(fName,"r")
@@ -67,7 +73,6 @@ class DataProcessing:
                 if object not in self.objectSubjects:
                     self.objectSubjects.append(object)
                 #add to the samples vector
-                Variables.logger.debug(processed)
                 finalSamples[processed-1,0,0] = self.objectSubjects.index(subject)
                 finalSamples[processed-1,0,1] = self.objectSubjects.index(object)
                 finalSamples[processed-1,0,maxLength+2] = self.relations.index(relation)
@@ -82,25 +87,27 @@ class DataProcessing:
                         Variables.logger.warning("Something bad happened, we dont know what!")
                 if processed==stopIteration:
                     return finalSamples
+        self.samples = finalSamples
         return finalSamples
 
 
-    def saveSamples(self, samples, fName="dummy.pt"):
-        torch.save(samples, fName)
+    def saveSamples(self, samples, fPrefix="dummy"):
+        torch.save(samples, "producedData/"+fPrefix+"-samples.pt")
+        torch.save(samples, "producedData/"+fPrefix+"-objectSubjects.pt")
+        torch.save(samples, "producedData/"+fPrefix+"-relations.pt")
 
-    def loadSamples(self, fName="dummy.pt"):
-        return torch.load(fName)
+    def loadSamples(self, fPrefix="dummy"):
+        self.objectSubjects = torch.save(samples, "producedData/"+fPrefix+"-samples.pt")
+        self.relations = torch.save(samples, "producedData/"+fPrefix+"-objectSubjects.pt")
+        self.samples = torch.save(samples, "producedData/"+fPrefix+"-relations.pt")
+        return samples
 
 
 if __name__ == '__main__':
-
-
     proc = DataProcessing()
     rawData = proc.loadJson("data/fewrel_train.json")
     rawDataVal = proc.loadJson("data/fewrel_val.json")
     rawData.update(rawDataVal)
     samples = proc.generateSamples(rawData)
     proc.saveSamples(samples)
-    data = proc.loadSamples()
-    Variables.logger.debug(samples.shape)
-    Variables.logger.debug(data.shape)
+    loadedData = proc.loadSamples()
