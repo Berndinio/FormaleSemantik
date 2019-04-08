@@ -36,6 +36,14 @@ class DataProcessing:
         data = json.loads(contents)
         return data
 
+    def polishSentence(self, tokens):
+        regex = re.compile("[0-9]", re.IGNORECASE)
+        tokens = regex.sub("0", tokens)
+        tokens = strip_punctuation(tokens)
+        tokens = strip_multiple_whitespaces(tokens)
+        tokens = tokens.lower()
+        tokens = tokens.strip()
+        return tokens
     def generateSamples(self, rawData, stopIteration=100):
         processed = 0
         allLength = 0
@@ -62,12 +70,7 @@ class DataProcessing:
                 if(processed%1000 == 0):
                     Variables.logger.info("Processing sample "+str(processed)+"/"+str(allLength)+", #unknownWords:"+str(len(unknownWords))+", total unknownWords:"+str(unknownWordsCount))
                 tokens = " ".join(sample["tokens"])
-                regex = re.compile("[0-9]", re.IGNORECASE)
-                tokens = regex.sub("0", tokens)
-                tokens = strip_punctuation(tokens)
-                tokens = strip_multiple_whitespaces(tokens)
-                tokens = tokens.lower()
-                tokens = tokens.strip()
+                tokens = self.polishSentence(tokens)
 
                 subject = sample["h"][0]
                 object = sample["t"][0]
@@ -122,6 +125,29 @@ class DataProcessing:
                     return self.samples
         return self.samples
 
+    def fitTFIDF(self, rawData, stopIteration=100):
+        from gensim.models import TfidfModel
+        from gensim.corpora import Dictionary
+        dataset = []
+        processed = 0
+        for key in rawData.keys():
+            for sample in rawData[key]:
+                processed += 1
+                tokens = " ".join(sample["tokens"])
+                tokens = self.polishSentence(tokens)
+                dataset.append([tokens])
+                if processed==stopIteration:
+                    break
+            if processed==stopIteration:
+                break
+        dct = Dictionary(dataset)  # fit dictionary
+        corpus = [dct.doc2bow(line) for line in dataset]
+        model = TfidfModel(corpus)  # fit model
+        vector = model[corpus[0]]  # apply model to the first corpus document
+        vector2 = model[corpus[0]]  # apply model to the first corpus document
+        Variables.logger.debug(dataset[0])
+        Variables.logger.debug(vector2)
+        Variables.logger.debug(vector)
 
     def saveSamples(self, samples, fPrefix="dummy"):
         torch.save(self.samples, "producedData/"+fPrefix+"-samples.pt")
@@ -140,10 +166,9 @@ if __name__ == '__main__':
     rawData = proc.loadJson("data/fewrel_train.json")
     rawDataVal = proc.loadJson("data/fewrel_val.json")
     rawData.update(rawDataVal)
+
     samples = proc.generateSamples(rawData)
     proc.saveSamples(samples)
     loadedData = proc.loadSamples()
 
-    Variables.logger.debug(proc.objectSubjects)
-    Variables.logger.debug(proc.relations)
-    Variables.logger.debug(proc.samples)
+    #proc.fitTFIDF(rawData, 1000)
