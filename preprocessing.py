@@ -140,7 +140,7 @@ if __name__ == '__main__':
     rawData = proc.loadJson("data/fewrel_train.json")
     rawDataVal = proc.loadJson("data/fewrel_val.json")
     rawData.update(rawDataVal)
-    samples = proc.generateSamples(rawData, 1)
+    samples = proc.generateSamples(rawData)
     proc.saveSamples(samples)
     loadedData = proc.loadSamples()
 
