@@ -1,5 +1,5 @@
 # FormaleSemantik
-**Every folder must contain a __init__.py**.
+**Every folder must contain a __init__.py**. 
 
 Start programs in root folder with
 ```
