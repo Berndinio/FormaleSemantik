@@ -1,5 +1,6 @@
 import logging
 import json
+import torch
 
 class Variables:
 #    CRITICAL 	50
@@ -16,3 +17,6 @@ class Variables:
     with open('data/relations.txt','r') as inf:
         labelsDict = json.loads(inf.read())
         labelsDictInverted = dict(map(reversed, labelsDict.items()))
+
+
+torch.set_default_tensor_type('torch.FloatTensor')
