@@ -228,7 +228,7 @@ if __name__ == '__main__':
     if(args.generate==1):
         Variables.logger.info("Generating the data")
         proc = DataProcessing()
-        proc.generateEverything()
+        proc.generateEverything("10000")
     else:
         Variables.logger.info("Testing the data")
         proc = DataProcessing("10000")
