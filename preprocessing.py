@@ -261,14 +261,16 @@ class DataProcessing:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-generate", type=int, default=0, help="Nothing to see here")
+    parser.add_argument("-amount", type=int, default=2*700, help="Nothing to see here")
+    parser.add_argument("-prefix", type=str, default="dummy", help="Nothing to see here")
     args = parser.parse_args()
     if(args.generate==1):
         Variables.logger.info("Generating the data")
         proc = DataProcessing()
-        proc.generateEverything("dummy", 700*2)
+        proc.generateEverything(args.prefix, args.amount)
     else:
         Variables.logger.info("Testing the data")
-        proc = DataProcessing("dummy")
+        proc = DataProcessing(args.prefix)
         for s in proc.samplesSplitted:
             Variables.logger.debug(s.shape)
         for s in proc.processedDatasetSplitted:
