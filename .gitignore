@@ -1,7 +1,7 @@
 #my own ignores
 GoogleNews-vectors-negative300.bin
 producedData
-
+!producedData/__init__.py
 
 
 
