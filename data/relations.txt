@@ -9,6 +9,7 @@
       "P364"  : "original language of work",
       "P410"  : "military rank",
       "P412"  : "voice type",
+      "P413"  : "speciality",
       "P463"  : "member of",
       "P641"  : "sport",
       "P921"  : "main subject",

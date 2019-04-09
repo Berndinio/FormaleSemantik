@@ -31,7 +31,6 @@ class DataProcessing:
         self.tfidfModel = None
         if fPrefix is not None:
             self.loadAll(fPrefix)
-
         self.nlp = spacy.load("en_core_web_sm")
 
     def loadJsonData(self, fPaths=["data/fewrel_train.json", "data/fewrel_val.json"]):
@@ -59,21 +58,28 @@ class DataProcessing:
     def generateSamples(self, rawData, stopIteration):
         processed = 0
         allLength = 0
-        maxLength = 0
+        maxLengthSentence = 0
+        maxLengthSubject = 0
+        maxLengthObject = 0
         unknownWords = set()
         unknownWordsCount = 0
         processedDataset = []
 
         for key in rawData.keys():
-            allLength += len(rawData[key])
             for sample in rawData[key]:
-                if len(sample["tokens"])>maxLength:
-                    maxLength = len(sample["tokens"])
+                allLength += 1
+                if len(self.polishSentence(" ".join(sample["tokens"])).split(" "))>maxLengthSentence:
+                    maxLengthSentence = len(self.polishSentence(" ".join(sample["tokens"])).split(" "))
+                if len(self.polishSentence(sample["h"][0]).split(" "))>maxLengthSubject:
+                    maxLengthSubject = len(self.polishSentence(sample["h"][0]).split(" "))
+                if len(self.polishSentence(sample["t"][0]).split(" "))>maxLengthObject:
+                    maxLengthObject = len(self.polishSentence(sample["t"][0]).split(" "))
+        Variables.logger.info("Dataset size:"+str(allLength)+", Maximum sentence length:"+str(maxLengthSentence)
+                    +", Maximum subject length:"+str(maxLengthSubject)
+                    +", Maximum object length:"+str(maxLengthObject))
         if stopIteration<allLength:
             allLength = stopIteration
-        Variables.logger.info("Dataset size:"+str(allLength)+", Maximum sentence length:"+str(maxLength))
-        self.samples = torch.zeros(stopIteration, self.word2VecDimensions, 2*maxLength+3)
-
+        self.samples = torch.zeros(allLength, self.word2VecDimensions, 1*2 + 2*maxLengthSentence + 1)
         #process samples
         for key in rawData.keys():
             relation = key
@@ -87,11 +93,9 @@ class DataProcessing:
                 tokens = self.polishSentence(tokens)
 
                 subject = sample["h"][0]
+                subject = self.polishSentence(subject)
                 object = sample["t"][0]
-                if subject not in self.objectSubjects:
-                    self.objectSubjects.append(subject)
-                if object not in self.objectSubjects:
-                    self.objectSubjects.append(object)
+                object = self.polishSentence(object)
 
                 #create the parse tree for SDP
                 edges = []
@@ -115,34 +119,67 @@ class DataProcessing:
                 if path==[]:
                     Variables.logger.warning("No SDP found")
 
-                #add subj/obj/rel to the samples vector
-                self.samples[processed-1,0,0] = self.objectSubjects.index(subject)
-                self.samples[processed-1,0,1] = self.objectSubjects.index(object)
-                self.samples[processed-1,0,-1] = self.relations.index(relation)
+                #add subject
+                vector = torch.zeros((300,))
+                vectorLength = 0
+                for x, word in enumerate(subject.split(" ")):
+                    try:
+                        vector_tmp = self.word2Vec[word]
+                        vector += torch.from_numpy(vector_tmp)
+                        vectorLength += 1
+                    except KeyError:
+                        #Variables.logger.debug("Subject Word not present")
+                        pass
+                    except Exception as e:
+                        Variables.logger.error(e)
+                if vectorLength!=0:
+                    self.samples[processed-1,:,0] = vector/vectorLength
+
+                #add object
+                vector = torch.zeros((300,))
+                vectorLength = 0
+                for x, word in enumerate(object.split(" ")):
+                    try:
+                        vector_tmp = self.word2Vec[word]
+                        vector += torch.from_numpy(vector_tmp)
+                        vectorLength += 1
+                    except KeyError:
+                        #Variables.logger.debug("Object Word not present")
+                        pass
+                    except Exception as e:
+                        Variables.logger.error(e)
+                if vectorLength!=0:
+                    self.samples[processed-1,:,1] = vector/vectorLength
+
+                #add relation
+                self.samples[processed-1, self.relations.index(relation), -1] = 1.0
+
                 #
                 #add sentence to the samples vector
+                counter = 0
                 for x, word in enumerate(tokens.split(" "), 0):
                     try:
                         vector = self.word2Vec[word]
-                        self.samples[processed-1,:,2+x] = torch.from_numpy(vector)
+                        self.samples[processed-1,:,2+counter] = torch.from_numpy(vector)
+                        counter += 1
                     except KeyError:
                         unknownWords.add(word)
                         unknownWordsCount += 1
-                    except:
-                        Variables.logger.warning("Something bad happened, we dont know what!")
-                        pass
+                    except Exception as e:
+                        Variables.logger.error(e)
                 #
                 #add SDP to the samples vector
+                counter = 0
                 for x, word in enumerate(path,0):
                     try:
                         vector = self.word2Vec[word]
-                        self.samples[processed-1,:,maxLength+2] = torch.from_numpy(vector)
+                        self.samples[processed-1,:,maxLengthSentence+2+counter] = torch.from_numpy(vector)
+                        counter += 1
                     except KeyError:
                         unknownWords.add(word)
                         unknownWordsCount += 1
-                    except:
-                        Variables.logger.warning("Something bad happened, we dont know what!")
-                        pass
+                    except Exception as e:
+                        Variables.logger.error(e)
                 self.processedDataset.append(tokens.split(" "))
                 #stop if already all processed
                 if processed==stopIteration:
@@ -169,7 +206,7 @@ class DataProcessing:
         self.tfidfModel = TfidfModel(corpus)  # fit model
         return self.tfidfModel
 
-    def generateEverything(self, fPrefix="dummy", stopIteration=10000):
+    def generateEverything(self, fPrefix="dummy", stopIteration=10):
         #generate samples
         rawData = self.loadJsonData()
         self.generateSamples(rawData, stopIteration)
@@ -187,7 +224,7 @@ class DataProcessing:
         valid_dataset = [self.processedDataset[i] for i in validRand]
         test_samples = self.samples[testRand]
         test_dataset = [self.processedDataset[i] for i in testRand]
-        self.processedDatasetSplitted = [train_samples, valid_dataset, test_dataset]
+        self.processedDatasetSplitted = [train_dataset, valid_dataset, test_dataset]
         train_samples = train_samples[None]
         valid_samples = valid_samples[None]
         test_samples = test_samples[None]
@@ -228,10 +265,10 @@ if __name__ == '__main__':
     if(args.generate==1):
         Variables.logger.info("Generating the data")
         proc = DataProcessing()
-        proc.generateEverything("10000")
+        proc.generateEverything("dummy", 700*2)
     else:
         Variables.logger.info("Testing the data")
-        proc = DataProcessing("10000")
+        proc = DataProcessing("dummy")
         for s in proc.samplesSplitted:
             Variables.logger.debug(s.shape)
         for s in proc.processedDatasetSplitted:
