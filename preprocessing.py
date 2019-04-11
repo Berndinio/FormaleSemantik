@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 import json
 import gensim
 import pickle

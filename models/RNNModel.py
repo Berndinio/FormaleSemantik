@@ -1,3 +1,5 @@
+#According to paper https://www.aclweb.org/anthology/P16-2034
+
 import torch
 import torch.nn as nn
 from Variables import Variables
@@ -25,11 +27,9 @@ class AttentionLSTM(nn.Module):
         cStates = torch.zeros((self.maxSentenceLength+1, 1*2, batchSize, self.hiddenSizeLSTM))
         #feed LSTM
         for idx in range(self.maxSentenceLength):
-            out, hidden = self.lstm(x[:, None, :, idx], (hStates[idx], cStates[idx]))
-            c_t = hidden[1]
-            h_t = hidden[0]
-            hStates[idx+1] = h_t
-            cStates[idx+1] = c_t
+            out, hidden = self.lstm(x[:, None, :, idx], (hStates[idx].clone(), cStates[idx].clone()))
+            hStates[idx+1] = hidden[0]
+            cStates[idx+1] = hidden[1]
         hStates = torch.sum(hStates, 1)
         #now has size (self.maxSentenceLength+1, batchSize, self.hiddenSizeLSTM)
         hStates = hStates[1:]
