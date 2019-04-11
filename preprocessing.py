@@ -17,7 +17,7 @@ class DataProcessing:
     def __init__(self, fPrefix=None):
         Variables.logger.info("Loading Word2Vec")
         #throws KeyError if undefined
-        self.word2Vec = gensim.models.KeyedVectors.load_word2vec_format('models/GoogleNews-vectors-negative300.bin', binary=True)
+        self.word2Vec = gensim.models.KeyedVectors.load_word2vec_format('models/enwiki.skip.size300.win10.neg15.sample1e-5.min15.bin', binary=True)
         self.word2VecDimensions = 300
         Variables.logger.info("Finished Word2Vec loading")
 
@@ -134,6 +134,8 @@ class DataProcessing:
                         Variables.logger.error(e)
                 if vectorLength!=0:
                     self.samples[processed-1,:,0] = vector/vectorLength
+                else:
+                    Variables.logger.debug("Subject not present")
 
                 #add object
                 vector = torch.zeros((300,))
@@ -150,7 +152,8 @@ class DataProcessing:
                         Variables.logger.error(e)
                 if vectorLength!=0:
                     self.samples[processed-1,:,1] = vector/vectorLength
-
+                else:
+                    Variables.logger.debug("Object not present")
                 #add relation
                 self.samples[processed-1, self.relations.index(relation), -1] = 1.0
 
