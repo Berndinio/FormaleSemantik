@@ -228,9 +228,6 @@ class DataProcessing:
         test_samples = self.samples[testRand]
         test_dataset = [self.processedDataset[i] for i in testRand]
         self.processedDatasetSplitted = [train_dataset, valid_dataset, test_dataset]
-        train_samples = train_samples[None]
-        valid_samples = valid_samples[None]
-        test_samples = test_samples[None]
         self.samplesSplitted = [train_samples, valid_samples, test_samples]
 
         #train tfidf
