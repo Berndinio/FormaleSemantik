@@ -16,12 +16,16 @@ import argparse
 from Variables import Variables
 
 class DataProcessing:
-    def __init__(self, fPrefix=None):
-        Variables.logger.info("Loading Word2Vec")
-        #throws KeyError if undefined
-        self.word2Vec = gensim.models.KeyedVectors.load_word2vec_format('models/enwiki.skip.size300.win10.neg15.sample1e-5.min15.bin', binary=True)
+    def __init__(self, fPrefix=None, loadw2v=True):
+        if(loadw2v):
+            Variables.logger.info("Loading Word2Vec")
+            #throws KeyError if undefined
+            self.word2Vec = gensim.models.KeyedVectors.load_word2vec_format(
+                'models/enwiki.skip.size300.win10.neg15.sample1e-5.min15.bin', binary=True)
+                #'models/enwiki.skip.size300.win10.neg15.sample1e-3.min5.bin', binary=True)
+                #'models/enwiki.skip.size300.win10.neg15.sample1e-3.min2.bin', binary=True)
+            Variables.logger.info("Finished Word2Vec loading")
         self.word2VecDimensions = 300
-        Variables.logger.info("Finished Word2Vec loading")
 
         self.samples = None
         self.samplesSplitted = []
@@ -261,6 +265,8 @@ class DataProcessing:
 
 
 if __name__ == '__main__':
+    torch.set_default_tensor_type("torch.FloatTensor")
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-generate", type=int, default=0, help="Nothing to see here")
     parser.add_argument("-amount", type=int, default=2*700, help="Nothing to see here")

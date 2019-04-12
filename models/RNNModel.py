@@ -20,14 +20,16 @@ class AttentionLSTM(nn.Module):
         self.softmax2 = nn.Softmax(dim=2)
         self.softmax1 = nn.Softmax(dim=1)
 
+        
+
     def forward(self, x):
         #samples x w2vecDim x seqLength
         batchSize = x.shape[0]
-        hStates = torch.zeros((self.maxSentenceLength+1, 1*2, batchSize, self.hiddenSizeLSTM))
-        cStates = torch.zeros((self.maxSentenceLength+1, 1*2, batchSize, self.hiddenSizeLSTM))
+        hStates = torch.zeros((self.maxSentenceLength+1, 1*2, batchSize, self.hiddenSizeLSTM)).to(Variables.device)
+        cStates = torch.zeros((self.maxSentenceLength+1, 1*2, batchSize, self.hiddenSizeLSTM)).to(Variables.device)
         #feed LSTM
         for idx in range(self.maxSentenceLength):
-            out, hidden = self.lstm(x[:, None, :, idx], (hStates[idx].clone(), cStates[idx].clone()))
+            out, hidden = self.lstm(x[:, None, :, idx].to(Variables.device), (hStates[idx].clone(), cStates[idx].clone()))
             hStates[idx+1] = hidden[0]
             cStates[idx+1] = hidden[1]
         hStates = torch.sum(hStates, 1)
