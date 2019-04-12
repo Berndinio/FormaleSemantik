@@ -16,14 +16,16 @@ import argparse
 from Variables import Variables
 
 class DataProcessing:
-    def __init__(self, fPrefix=None, loadw2v=True):
+    def __init__(self, fPrefix=None, loadw2v=True, word2VecFile="min15"):
         if(loadw2v):
-            Variables.logger.info("Loading Word2Vec")
             #throws KeyError if undefined
-            self.word2Vec = gensim.models.KeyedVectors.load_word2vec_format(
-                'models/enwiki.skip.size300.win10.neg15.sample1e-5.min15.bin', binary=True)
-                #'models/enwiki.skip.size300.win10.neg15.sample1e-3.min5.bin', binary=True)
-                #'models/enwiki.skip.size300.win10.neg15.sample1e-3.min2.bin', binary=True)
+            Variables.logger.info("Loading Word2Vec "+word2VecFile)
+            if word2VecFile=="min15":
+                self.word2Vec = gensim.models.KeyedVectors.load_word2vec_format(
+                    'models/enwiki.skip.size300.win10.neg15.sample1e-5.'+word2VecFile+'.bin', binary=True)
+            else:
+                self.word2Vec = gensim.models.KeyedVectors.load_word2vec_format(
+                    'models/enwiki.skip.size300.win10.neg15.sample1e-3.'+word2VecFile+'.bin', binary=True, encoding="ISO-8859-1")
             Variables.logger.info("Finished Word2Vec loading")
         self.word2VecDimensions = 300
 
@@ -164,7 +166,7 @@ class DataProcessing:
                 self.samples[processed-1, self.relations.index(relation), -1] = 1.0
 
                 #
-                #add sentence to the samples vector
+                #add sentence to the samples vector -- keine Luecken
                 counter = 0
                 for x, word in enumerate(tokens.split(" "), 0):
                     try:
@@ -244,6 +246,7 @@ class DataProcessing:
         self.saveAll(fPrefix)
 
     def saveAll(self, fPrefix):
+        Variables.logger.info("Saving with prefix: "+fPrefix)
         #list with pytorch tensors [train_samples, valid_samples, test_samples]
         torch.save(self.samplesSplitted, "producedData/"+fPrefix+"-samplesSplitted.pt")
         #list with samples [train_samples, valid_samples, test_samples]
@@ -271,10 +274,11 @@ if __name__ == '__main__':
     parser.add_argument("-generate", type=int, default=0, help="Nothing to see here")
     parser.add_argument("-amount", type=int, default=2*700, help="Nothing to see here")
     parser.add_argument("-prefix", type=str, default="dummy", help="Nothing to see here")
+    parser.add_argument("-w2v", type=str, default="min15", help="Nothing to see here")
     args = parser.parse_args()
     if(args.generate==1):
         Variables.logger.info("Generating the data")
-        proc = DataProcessing()
+        proc = DataProcessing(word2VecFile=args.w2v)
         proc.generateEverything(args.prefix, args.amount)
     else:
         Variables.logger.info("Testing the data")
