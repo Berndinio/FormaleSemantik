@@ -18,11 +18,9 @@ class Variables:
         labelsDict = json.loads(inf.read())
         labelsDictInverted = dict(map(reversed, labelsDict.items()))
 
-
     if torch.cuda.is_available():
-        device = 'cuda:1'
+        device = None
         torch.set_default_tensor_type("torch.cuda.FloatTensor")
     else:
-        device = 'cpu'
+        device = torch.device('cpu', 0)
         torch.set_default_tensor_type("torch.FloatTensor")
-    logger.info("Using device "+device)
