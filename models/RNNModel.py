@@ -142,17 +142,10 @@ class AttentionLSTM_NoDropout(nn.Module):
         self.softmax2 = nn.Softmax(dim=2)
         self.softmax1 = nn.Softmax(dim=1)
 
-        #self.drop1 = nn.Dropout(0.0)
-        #self.drop2 = nn.Dropout(0.0)
-        #self.drop3 = nn.Dropout(0.0)
-
         self.norm1 = nn.BatchNorm1d(300)
 
 
     def forward(self, x):
-        #dropout
-        #x = self.drop1(x)
-
         #samples x w2vecDim x seqLength
         batchSize = x.shape[0]
         hStates = torch.zeros((self.maxSentenceLength+1, 1*2, batchSize, self.hiddenSizeLSTM)).to(Variables.device)
@@ -170,9 +163,6 @@ class AttentionLSTM_NoDropout(nn.Module):
         #norm
         hStates = self.norm1(hStates)
 
-        #dropout
-        #hStates = self.drop1(hStates)
-
         # feed attention layer
         # NOW (batchSize, self.hiddenSizeLSTM, self.maxSentenceLength+1, 1*2)
         M = self.tanh(hStates)
@@ -181,9 +171,6 @@ class AttentionLSTM_NoDropout(nn.Module):
         alpha = alpha.permute(0, 2, 1)
         r = torch.bmm(hStates, alpha)
         hStar = self.tanh(r)
-
-        #dropout
-        #hStar = self.drop1(hStar)
 
         #finally classify with FC
         hStar = hStar.squeeze()
