@@ -13,6 +13,12 @@ import torchvision
 import torchvision.transforms as transforms
 
 
+proc = DataProcessing("dummy")
+train_dataset = RNNDataset(proc.samplesSplitted[0])
+valid_dataset = RNNDataset(proc.samplesSplitted[1])
+test_dataset = RNNDataset(proc.samplesSplitted[2])
+
+
 def getTrainData():
     return torch.randn(30,300, 21)
     
