@@ -1,7 +1,11 @@
 from os import walk
 from Variables import Variables
 import re
+import matplotlib
+matplotlib.use('pdf')
 import matplotlib.pyplot as plt
+from scipy.interpolate import spline
+import numpy as np
 
 def keySort(elem):
     s = elem
@@ -20,7 +24,7 @@ def keySort(elem):
     return key
 
 def preparePlot(s):
-    x, y = [],[]
+    x, y = [0],[0]
     dataset = re.findall("min\d+[-small]*", s)
     dataset = dataset[0]
     netType = re.findall("AttentionLSTM_[A-Z]*", s)
@@ -40,6 +44,8 @@ if __name__ == '__main__':
 
     #begin plotting
     x,y,dataset,netType = preparePlot(f[0])
+    x = []
+    y = []
     for file in f:
         numbers = re.findall("\d+", file)
         epoch = int(numbers[1])
@@ -47,18 +53,63 @@ if __name__ == '__main__':
             #save old plot
             plt.ylabel("Accuracy")
             plt.xlabel("Epoch")
-            plt.plot(x,y)
-            plt.axis([0, 100, 0, 100])
+            plt.ylim(0,100)
+            plt.plot(x, y, label=dataset+" "+netType)
             plt.title(dataset+" "+netType)
-            plt.savefig("plots/"dataset+"-"+netType+".png")
+            plt.savefig("plots/"+dataset+"_"+netType+".png")
+            plt.clf()
             #prepareNewPlot
             x,y,dataset,netType = preparePlot(file)
+            Variables.logger.debug("New plot"+dataset+" "+netType)
         x.append(epoch)
-        y.append(numbers[-1])
+        y.append(int(numbers[-1]))
     #save a last time
     plt.ylabel("Accuracy")
     plt.xlabel("Epoch")
-    plt.plot(x,y)
-    plt.axis([0, 100, 0, 100])
+    plt.ylim(0,100)
+    plt.plot(x, y, label=dataset+" "+netType)
     plt.title(dataset+" "+netType)
-    plt.savefig("plots/"dataset+"-"+netType+".png")
+    plt.savefig("plots/"+dataset+"_"+netType+".png")
+
+
+
+
+
+    #begin plotting
+    fig = plt.figure()
+    ax = plt.subplot(111)
+    x,y,dataset,netType = preparePlot(f[0])
+    x = []
+    y = []
+    first = True
+    for file in f:
+        numbers = re.findall("\d+", file)
+        epoch = int(numbers[1])
+        if(epoch==0):
+            if not first:
+                #save old plot
+                plt.ylabel("Accuracy")
+                plt.xlabel("Epoch")
+                plt.ylim(0,100)
+                ax.plot(x, y, label=dataset+" "+netType)
+            #prepareNewPlot
+            x,y,dataset,netType = preparePlot(file)
+            Variables.logger.debug("New plot"+dataset+" "+netType)
+            first = False
+        x.append(epoch)
+        y.append(int(numbers[-1]))
+    #save a last time
+    plt.ylabel("Accuracy")
+    plt.xlabel("Epoch")
+    plt.ylim(0,100)
+    ax.plot(x, y, label=dataset+" "+netType)
+
+    # Shrink current axis by 50%
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.5, box.height * 0.5])
+
+    # Put a legend to the right of the current axis
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+    plt.title("All")
+    plt.savefig("plots/All.png", dpi=600)
