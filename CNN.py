@@ -62,9 +62,9 @@ def plot_history(train_acc_history, val_acc_history, train_los_history, val_los_
         print('saved modelsGraph.png')
 
     if MultiPlotPng:
-        if len(historyList) > 1:
+        if len(train_acc_history) > 1:
             fig, axes = plt.subplots(len(train_acc_history), 2)
-            for i in range (0, len(historyList)):
+            for i in range (0, len(train_acc_history)):
                 axes[i, 0].plot(train_acc_history[i])
                 axes[i, 0].plot(val_acc_history[i])
                 axes[i, 1].plot(train_los_history[i])
@@ -79,7 +79,7 @@ def plot_history(train_acc_history, val_acc_history, train_los_history, val_los_
                 axes[i, 1].legend(['Train', 'Test'], loc='upper left')
     #        plt.tight_layout(pad=0.8, w_pad=0.7, h_pad=1.5)
     #            plt.subplots_adjust(left=0.3, right=1.9, top=1.9, bottom=0.5)
-            fig.set_figheight(7.2*len(historyList))
+            fig.set_figheight(7.2*len(train_acc_history))
             fig.set_figwidth(15)
             fig.savefig(name2)
             plt.close(fig)
@@ -137,7 +137,7 @@ class ConvNet(nn.Module):
 #main
 
 cnn1 = True
-usedDataSet = "dummy"
+usedDataSet = "dummy2"
 
 
 
@@ -185,19 +185,19 @@ if cnn1:
 else:
     temp4 = torch.zeros(samplesize_train, 300, 46)
     temp4[:, : , :2] = train_dataset[:, : , :2]
-    temp4[:, : , :2] = train_dataset[:, : , 45:]
+    temp4[:, : , 2:46] = train_dataset[:, : , 45:]
     train_dataset = temp4
     train_dataset= train_dataset.to(Variables.device)
 
     temp5 = torch.zeros(samplesize_val, 300, 46)
     temp5[:, : , :2] = valid_dataset[:, : , :2]
-    temp5[:, : , :2] = train_dataset[:, : , 45:]
+    temp5[:, : , 2:46] = valid_dataset[:, : , 45:]
     valid_dataset = temp5
     valid_dataset= valid_dataset.to(Variables.device)
 
     temp6 = torch.zeros(samplesize_test, 300, 46)
     temp6[:, : , :2] = test_dataset[:, : , :2]
-    temp6[:, : , :2] = train_dataset[:, : , 45:]
+    temp6[:, : , 2:46] = test_dataset[:, : , 45:]
     test_dataset = temp6
     test_dataset= test_dataset.to(Variables.device)
 
@@ -215,7 +215,7 @@ test_dataset = test_dataset[:, None, :, :]
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # Hyper parameters
-num_epochs = 100
+num_epochs = 3
 num_classes = 81
 batch_size = 100
 learning_rate = 0.0015
@@ -223,7 +223,7 @@ if cnn1:
     inputCnn = (batch_size,1,300,3)
     numWordsForInput = 2
 else:
-    inputCnn = (batch_size,1,300,89)
+    inputCnn = (batch_size,1,300,46)
     numWordsForInput = 2+43
 
 
@@ -253,7 +253,10 @@ def evaluate():
         for data in val_loader:
             images = data[:,:,:,:-1]
             labels = data[:, :,:, -1]
-
+            labels = torch.tensor(labels, dtype=torch.long, device=device)
+            labels = torch.squeeze(labels)
+            labels = labels[:, :81]
+            labels = labels.argmax(dim=1)
             images = images.to(device)
             labels = labels.to(device)
 
@@ -264,9 +267,9 @@ def evaluate():
             running_loss += loss.item()
             running_corrects += (predicted == labels).sum().item()
 
-        print('Val Accuracy of the model: {} %'.format(100 * running_corrects / total))
+    print('Val Accuracy of the model: {} %'.format(100 * running_corrects / samplesize_val))
     epoch_loss = running_loss / total
-    epoch_acc = running_corrects / total
+    epoch_acc = running_corrects / samplesize_val
     val_acc_history.append(epoch_acc)
     val_los_history.append(epoch_loss)
 
@@ -281,8 +284,12 @@ def test():
         for data in test_loader:
             images = data[:,:,:,:-1]
             labels = data[:, :,:, -1]
-
+            labels = torch.tensor(labels, dtype=torch.long, device=device)
+            labels = torch.squeeze(labels)
+            labels = labels[:, :81]
+            labels = labels.argmax(dim=1)
             images = images.to(device)
+            labels = labels.to(device)
             labels = labels.to(device)
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
@@ -291,9 +298,9 @@ def test():
             running_loss += loss.item()
             running_corrects += (predicted == labels).sum().item()
 
-        print('Test Accuracy of the model: {} %'.format(100 * running_corrects / total))
+        #print('Test Accuracy of the model: {} %'.format(100 * running_corrects / total))
     test_loss = running_loss / total
-    test_acc = running_corrects / total
+    test_acc = running_corrects / samplesize_test
     print("test_acc: ")
     print(test_acc)
     print("test_loss: ")
@@ -322,18 +329,14 @@ val_los_history = []
 
 
 total_step = len(train_loader)
-running_loss = 0.0
-running_corrects = 0
 for epoch in range(num_epochs):
+    running_loss = 0.0
+    running_corrects = 0
     for i, data in enumerate(train_loader, 0):
         #print(i)
         images = data[:,:,:,:-1]
         labels = data[:, :,:, -1]
         labels = torch.tensor(labels, dtype=torch.long, device=device)
-        #print(data.shape)
-        #print(labels.shape)
-        #images = np.expand_dims(images, axis=1)
-        #labels = np.expand_dims(labels, axis=1)
         labels = torch.squeeze(labels)
         labels = labels[:, :81]
         labels = labels.argmax(dim=1)
@@ -356,17 +359,16 @@ for epoch in range(num_epochs):
         running_loss += loss.item()
         running_corrects += (predicted == labels).sum().item()
 
-        if (i+1) % 100 == 0:
-            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
-                   .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
+    
 
-    epoch_loss = running_loss / batch_size
-    epoch_acc = running_corrects / batch_size
+    epoch_loss = running_loss / samplesize_train
+    epoch_acc = running_corrects / samplesize_train
     train_acc_history.append(epoch_acc)
     train_los_history.append(epoch_loss)
+    print ("Epoch: " , epoch+1)
+    print("train_epoch_acc" , epoch_acc)
+    print("train_epoch_loss" , epoch_loss)
     evaluate()
-
-
 
 
 
