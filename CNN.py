@@ -29,36 +29,36 @@ print(train_dataset.shape)
 print(valid_dataset.shape)
 print(test_dataset.shape)
 
+np.squeeze(train_dataset)
+np.squeeze(valid_dataset)
+np.squeeze(test_dataset)
+#test = train_dataset[:, :,0:2]
+print(test.shape)
 
 
 
 
-'''
 # Device config
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # Hyper parameters
-num_epochs = 3
+num_epochs = 1
 num_classes = 80
-batch_size = 2
+batch_size = 200
 learning_rate = 0.001
 numWordsForInput = 2
 
 
-# get data
-train_dataset = getTrainData()
-test_dataset = getTestData()
 
 # Data loader
 train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                            batch_size=batch_size, 
                                            shuffle=True)
 
-test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
+test_loader = torch.utils.data.DataLoader(dataset=valid_dataset,
                                           batch_size=batch_size, 
                                           shuffle=True)
 
-(model.eval Modus)
 # Convolutional neural network
 class ConvNet(nn.Module):
     def __init__(self, num_classes):
@@ -103,16 +103,16 @@ for epoch in range(num_epochs):
     for i, data in enumerate(train_loader, 0):
         #print(i)
         images = data[:,:,:-1]
-        labels = data[:, :, -1 ]
+        labels = data[:, :, -1]
         
         #print(data.shape)
         #print(images.shape)
         #print(labels.shape)
-        images = np.expand_dims(images, axis=1)
-        labels = np.expand_dims(labels, axis=1)
+        #images = np.expand_dims(images, axis=1)
+        #labels = np.expand_dims(labels, axis=1)
         
-        #images = images.to(device)
-        #labels = labels.to(device)
+        images = images.to(device)
+        labels = labels.to(device)
         
         # Forward pass
         outputs = model(images)
@@ -135,7 +135,10 @@ model.eval()  # eval mode (batchnorm uses moving mean/variance instead of mini-b
 with torch.no_grad():
     correct = 0
     total = 0
-    for images, labels in test_loader:
+    for data in test_loader:
+        images = data[:,:,:-1]
+        labels = data[:, :, -1]
+        
         images = images.to(device)
         labels = labels.to(device)
         outputs = model(images)
