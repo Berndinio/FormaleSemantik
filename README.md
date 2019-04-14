@@ -51,8 +51,8 @@ To train the recurrent models tested, follow these steps:
 python -m preprocessing -generate 1 -amount 999999 -prefix min15 -w2v min15
 python -m preprocessing -generate 1 -amount 999999 -prefix min5 -w2v min5
 python -m preprocessing -generate 1 -amount 999999 -prefix min2 -w2v min2
-python -m preprocessing -generate 1 -amount 7000 -prefix min5-small -w2v mi5
-python -m preprocessing -generate 1 -amount 7000 -prefix min2-small -w2v mi2
+python -m preprocessing -generate 1 -amount 7000 -prefix min5-small -w2v min5
+python -m preprocessing -generate 1 -amount 7000 -prefix min2-small -w2v min2
 ```
 to create the datasets. The "-small" datasets have only 10 relations.
 
