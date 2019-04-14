@@ -53,6 +53,7 @@ if __name__ == '__main__':
     criterion = nn.NLLLoss()
     datasetLength = len(train_dataloader)
     datasetLengthValid = len(valid_dataset)
+    datasetLengthTest = len(test_dataset)
     for epoch in range(num_epochs):
         net.train()
         for i_batch, (inp_x, inp_y) in enumerate(train_dataloader):
@@ -71,7 +72,7 @@ if __name__ == '__main__':
         sys.stdout.write("\rEpoch "+str(epoch+1)+"/"+str(num_epochs)+", Progress:  100%")
         print(" ")
 
-        #compute valid accuracy
+        #compute valid & test accuracy
         net.eval()
         accurate = 0
         for i_batch, (inp_x, inp_y) in enumerate(valid_dataloader):
@@ -80,10 +81,20 @@ if __name__ == '__main__':
             output = net(inp_x)
             indices = output.argmax(dim=1)
             accurate += torch.sum(indices == inp_y)
-        Variables.logger.info("Absolute validation accuracy is "+
+        Variables.logger.info("Absolute valid accuracy is "+
                 str(accurate.item())+"/"+str(datasetLengthValid)+"="+str(accurate.item()/datasetLengthValid * 100)+"%")
+
+        accurate = 0
+        for i_batch, (inp_x, inp_y) in enumerate(test_dataloader):
+            inp_x = inp_x.to(Variables.device)
+            inp_y = inp_y.to(Variables.device)
+            output = net(inp_x)
+            indices = output.argmax(dim=1)
+            accurate += torch.sum(indices == inp_y)
+        Variables.logger.info("Absolute test accuracy is "+
+                str(accurate.item())+"/"+str(datasetLengthTest)+"="+str(accurate.item()/datasetLengthTest * 100)+"%")
         torch.save(net, "models/"+args.prefix+"_"
             +"AttentionLSTM_"+args.network+"-epoch_"
             +str(epoch)+"-correct_"
-            +str(int(accurate.item()/datasetLengthValid * 100))
+            +str(int(accurate.item()/datasetLengthTest * 100))
             +".pt")
