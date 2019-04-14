@@ -11,7 +11,7 @@ class RNNDataset(Dataset):
 
     def __getitem__(self, idx):
         # (allLength, self.word2VecDimensions, 1*2 + 2*maxLengthSentence + 1)
-        sliced = self.dataSet[idx, :, -1][:80].type(torch.LongTensor)
+        sliced = self.dataSet[idx, :, -1][:81].type(torch.LongTensor)
         indice = sliced.argmax()
         return self.dataSet[idx, :, 2:2+43], indice
 
