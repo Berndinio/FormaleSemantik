@@ -289,7 +289,7 @@ for epoch in range(num_epochs):
     evaluate()
     
 
-# Test the model
+# val model
 def evaluate():
     model.eval()  # eval mode (batchnorm uses moving mean/variance instead of mini-batch mean/variance)
     running_loss = 0.0
@@ -315,6 +315,8 @@ def evaluate():
     val_acc_history.append(epoch_acc)
     val_los_history.append(epoch_loss)
 
+
+#test model
 def test():
     model.eval()  # eval mode (batchnorm uses moving mean/variance instead of mini-batch mean/variance)
     running_loss = 0.0
@@ -341,9 +343,14 @@ def test():
     print(test_acc)
     print("test_loss: ")
     print(test_loss)
-    
+    text_file = open("Cnn_Output.txt", "w")
+    text_file.write("test_acc: %s" % test_acc)
+    text_file.write('\n')
+    text_file.write("test_loss: %s" % test_loss)
+    text_file.close()
 
 
 plot_history(train_acc_history, val_acc_history, train_los_history, val_los_history, name1='netGraph.png', name2='netGraphMultiPlot.png')
+test()
 # Save the model checkpoint and graphs
-#torch.save(model.state_dict(), 'model.ckpt')
+torch.save(model.state_dict(), 'model.ckpt')
