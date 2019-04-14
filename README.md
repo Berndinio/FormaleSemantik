@@ -41,6 +41,42 @@ Papers read for the RNN models:
 
 4. [Improved Relation Classification by Deep Recurrent Neural Networks with Data Augmentation](https://arxiv.org/pdf/1601.03651.pdf)
 
+To train the recurrent models tested, follow these steps:
+
+* Download the dataset (train and validation) and save it to
+"data/fewrel_train.json", "data/fewrel_val.json"
+
+* Execute (**WARNING**: This needs some time and ~30GB of disk memory. 16GB of RAM are an advantage.):
+```
+python -m preprocessing -generate 1 -amount 999999 -prefix min15 -w2v min15
+python -m preprocessing -generate 1 -amount 999999 -prefix min5 -w2v min5
+python -m preprocessing -generate 1 -amount 999999 -prefix min2 -w2v min2
+python -m preprocessing -generate 1 -amount 7000 -prefix min5-small -w2v mi5
+python -m preprocessing -generate 1 -amount 7000 -prefix min2-small -w2v mi2
+```
+to create the datasets. The "-small" datasets have only 10 relations.
+
+* Execute (**WARNING** This needs ~5GB of disk memory)(If there is no gpu argument given, the cpu is used):
+```
+python -m Trainers.RNNTrain -prefix min15 -network NDNN -gpu <GPU Index>
+python -m Trainers.RNNTrain -prefix min15 -network ND -gpu <GPU Index>
+python -m Trainers.RNNTrain -prefix min15 -network NN -gpu <GPU Index>
+python -m Trainers.RNNTrain -prefix min5-small -network NDNN -gpu <GPU Index>
+python -m Trainers.RNNTrain -prefix min5 -network NDNN -gpu <GPU Index>
+python -m Trainers.RNNTrain -prefix min2-small -network NDNN -gpu <GPU Index>
+python -m Trainers.RNNTrain -prefix min2 -network NDNN -gpu <GPU Index>
+```
+to train the models with different architectures on different datasets.
+
+* Execute
+```
+python -m plotRNNs
+```
+to generate the classification accuracy plots.
+
+
+
+
 ## Convolutional models
 
 
