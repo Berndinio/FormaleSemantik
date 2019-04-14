@@ -15,6 +15,11 @@ For example if you want to start the model/preprocessing.py ```if __name__ == '_
 python -m model.preprocessing
 ```
 
+## Team
+Jan Sieber, Johannes Daub, Robin Ruland
+
+## Environment
+Python 3.5
 
 ## Dataset
 [FewRel](https://www.researchgate.net/publication/328494683_FewRel_A_Large-Scale_Supervised_Few-Shot_Relation_Classification_Dataset_with_State-of-the-Art_Evaluation) Dataset

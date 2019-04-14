@@ -1,3 +1,6 @@
+#Jan Sieber, 3219317
+
+
 from torch.utils.data import Dataset
 import torch
 from Variables import Variables
