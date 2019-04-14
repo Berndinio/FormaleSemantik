@@ -7,7 +7,7 @@ Created on Tue Apr  9 02:40:46 2019
 
 import numpy as np
 import matplotlib.pyplot as plt
-import torch 
+import torch
 import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
@@ -60,7 +60,7 @@ def plot_history(train_acc_history, val_acc_history, train_los_history, val_los_
         fig.savefig(name1)
         plt.close(fig)
         print('saved modelsGraph.png')
-         
+
     if MultiPlotPng:
         if len(historyList) > 1:
             fig, axes = plt.subplots(len(train_acc_history), 2)
@@ -107,32 +107,27 @@ class ConvNet(nn.Module):
             nn.BatchNorm2d(32),
             nn.ReLU())
             #nn.MaxPool2d(kernel_size=2, stride=2))
-        self.fc1 = nn.Linear(873600,40)#10*numWordsForInput*64, 40)
+        self.fc1 = nn.Linear(8736,40)#10*numWordsForInput*64, 40)
         self.dropout = nn.Dropout(0.45)
         self.fc2 = nn.Linear(40, num_classes)
         self.dropout = nn.Dropout(0.45)
         self.softmax = nn.Softmax(dim=1)
-    
+
     def forward(self, x):
         out = self.layer1(x)
-        print("test2")
-        print(out.shape)
         out = self.layer2(out)
         out = self.layer3(out)
-        print("test")
-        print(out.shape)
-        #out = out.view(-1, 873600)#64*10*numWordsForInput*64)
-        a = torch.squeeze(out)
-        print("test2")
-        print(out.shape)
+        out = out.view(-1, 8736)
         out = self.fc1(out)
         out = self.fc2(out)
-        print("test2")
-        print(out.shape)
         out = self.softmax(out)
-        print("test2")
-        print(out.shape)
         return out
+
+
+
+
+
+
 
 
 
@@ -142,7 +137,7 @@ class ConvNet(nn.Module):
 #main
 
 cnn1 = True
-usedDataSet = "dummy2"
+usedDataSet = "dummy"
 
 
 
@@ -175,13 +170,13 @@ if cnn1:
     temp[:, : , -1] = train_dataset[:, : , -1]
     train_dataset = temp
     train_dataset= train_dataset.to(Variables.device)
-    
+
     temp2 = torch.zeros(samplesize_val, 300, 3)
     temp2[:, : , :2] = valid_dataset[:, : , :2]
     temp2[:, : , -1] = valid_dataset[:, : , -1]
     valid_dataset = temp2
     valid_dataset= valid_dataset.to(Variables.device)
-    
+
     temp3 = torch.zeros(samplesize_test, 300, 3)
     temp3[:, : , :2] = test_dataset[:, : , :2]
     temp3[:, : , -1] = test_dataset[:, : , -1]
@@ -193,20 +188,20 @@ else:
     temp4[:, : , :2] = train_dataset[:, : , 45:]
     train_dataset = temp4
     train_dataset= train_dataset.to(Variables.device)
-    
+
     temp5 = torch.zeros(samplesize_val, 300, 46)
     temp5[:, : , :2] = valid_dataset[:, : , :2]
     temp5[:, : , :2] = train_dataset[:, : , 45:]
     valid_dataset = temp5
     valid_dataset= valid_dataset.to(Variables.device)
-    
+
     temp6 = torch.zeros(samplesize_test, 300, 46)
     temp6[:, : , :2] = test_dataset[:, : , :2]
     temp6[:, : , :2] = train_dataset[:, : , 45:]
     test_dataset = temp6
     test_dataset= test_dataset.to(Variables.device)
-    
-    
+
+
 print(train_dataset.shape)
 print(valid_dataset.shape)
 print(test_dataset.shape)
@@ -234,79 +229,19 @@ else:
 
 # Data loader
 train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
-                                           batch_size=batch_size, 
+                                           batch_size=batch_size,
                                            shuffle=True)
 
 val_loader = torch.utils.data.DataLoader(dataset=valid_dataset,
-                                          batch_size=batch_size, 
+                                          batch_size=batch_size,
                                           shuffle=True)
 
 test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
-                                          batch_size=batch_size, 
+                                          batch_size=batch_size,
                                           shuffle=True)
 
 
 model = ConvNet(num_classes).to(device)
-
-# Train the model
-
-# Loss and optimizer
-criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-
-train_acc_history = []
-val_acc_history = []
-train_los_history = []
-val_los_history = []
-#best_model_wts = copy.deepcopy(model.state_dict())
-#best_acc = 0.0
-    
-    
-total_step = len(train_loader)
-running_loss = 0.0
-running_corrects = 0
-for epoch in range(num_epochs):
-    for i, data in enumerate(train_loader, 0):
-        #print(i)
-        images = data[:,:,:,:-1]
-        labels = data[:, :,:, -1]
-        labels = torch.tensor(labels, dtype=torch.long, device=device)
-        #print(data.shape)
-        #print(labels.shape)
-        #images = np.expand_dims(images, axis=1)
-        #labels = np.expand_dims(labels, axis=1)
-        labels = torch.squeeze(labels)
-        labels = labels[:, :81]
-        images = images.to(device)
-        labels = labels.to(device)
-        
-        # Forward pass
-        outputs = model(images)
-        _, predicted = torch.max(outputs.data, 1)
-        print(labels.shape)
-        print(images.shape)
-        print(outputs.shape)
-        
-        loss = criterion(outputs, labels)
-        
-        # Backward and optimize
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        
-        running_loss += loss.item()
-        running_corrects += (predicted == labels).sum().item()
-        
-        if (i+1) % 100 == 0:
-            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}' 
-                   .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
-            
-    epoch_loss = running_loss / batch_size
-    epoch_acc = running_corrects / batch_size
-    train_acc_history.append(epoch_acc)
-    train_los_history.append(epoch_loss)
-    evaluate()
-    
 
 # val model
 def evaluate():
@@ -318,16 +253,17 @@ def evaluate():
         for data in val_loader:
             images = data[:,:,:,:-1]
             labels = data[:, :,:, -1]
-            
+
             images = images.to(device)
             labels = labels.to(device)
+
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
             loss = criterion(outputs, labels)
             total += labels.size(0)
             running_loss += loss.item()
             running_corrects += (predicted == labels).sum().item()
-    
+
         print('Val Accuracy of the model: {} %'.format(100 * running_corrects / total))
     epoch_loss = running_loss / total
     epoch_acc = running_corrects / total
@@ -345,7 +281,7 @@ def test():
         for data in test_loader:
             images = data[:,:,:,:-1]
             labels = data[:, :,:, -1]
-            
+
             images = images.to(device)
             labels = labels.to(device)
             outputs = model(images)
@@ -354,7 +290,7 @@ def test():
             total += labels.size(0)
             running_loss += loss.item()
             running_corrects += (predicted == labels).sum().item()
-    
+
         print('Test Accuracy of the model: {} %'.format(100 * running_corrects / total))
     test_loss = running_loss / total
     test_acc = running_corrects / total
@@ -367,6 +303,71 @@ def test():
     text_file.write('\n')
     text_file.write("test_loss: %s" % test_loss)
     text_file.close()
+
+
+
+
+# Train the model
+
+# Loss and optimizer
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+train_acc_history = []
+val_acc_history = []
+train_los_history = []
+val_los_history = []
+#best_model_wts = copy.deepcopy(model.state_dict())
+#best_acc = 0.0
+
+
+total_step = len(train_loader)
+running_loss = 0.0
+running_corrects = 0
+for epoch in range(num_epochs):
+    for i, data in enumerate(train_loader, 0):
+        #print(i)
+        images = data[:,:,:,:-1]
+        labels = data[:, :,:, -1]
+        labels = torch.tensor(labels, dtype=torch.long, device=device)
+        #print(data.shape)
+        #print(labels.shape)
+        #images = np.expand_dims(images, axis=1)
+        #labels = np.expand_dims(labels, axis=1)
+        labels = torch.squeeze(labels)
+        labels = labels[:, :81]
+        labels = labels.argmax(dim=1)
+        images = images.to(device)
+        labels = labels.to(device)
+
+        # Forward pass
+        outputs = model(images)
+        _, predicted = torch.max(outputs.data, 1)
+
+
+
+        loss = criterion(outputs, labels)
+
+        # Backward and optimize
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item()
+        running_corrects += (predicted == labels).sum().item()
+
+        if (i+1) % 100 == 0:
+            print ('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
+                   .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
+
+    epoch_loss = running_loss / batch_size
+    epoch_acc = running_corrects / batch_size
+    train_acc_history.append(epoch_acc)
+    train_los_history.append(epoch_loss)
+    evaluate()
+
+
+
 
 
 plot_history(train_acc_history, val_acc_history, train_los_history, val_los_history, name1='netGraph.png', name2='netGraphMultiPlot.png')
