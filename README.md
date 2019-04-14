@@ -16,7 +16,7 @@ python -m model.preprocessing
 ```
 
 ## Team
-Jan Sieber, Johannes Daub, Robin Ruland
+Jan Sieber (3219317), Robin Ruland (3230684), Johannes Daub (3145320)
 
 ## Environment
 Python 3.5
