@@ -132,7 +132,7 @@ class ConvNet(nn.Module):
 #main
 
 cnn1 = True
-usedDataSet = "dummy2"
+usedDataSet = "dummy"
 
 
 
