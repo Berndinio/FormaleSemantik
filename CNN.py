@@ -12,25 +12,26 @@ import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 
+from preprocessing import DataProcessing
+from torch.utils.data import Dataset, DataLoader
+from Variables import Variables
+import torch.optim as optim
 
+#get data
 proc = DataProcessing("dummy")
-train_dataset = RNNDataset(proc.samplesSplitted[0])
-valid_dataset = RNNDataset(proc.samplesSplitted[1])
-test_dataset = RNNDataset(proc.samplesSplitted[2])
+train_dataset = proc.samplesSplitted[0]
+valid_dataset = proc.samplesSplitted[1]
+test_dataset = proc.samplesSplitted[2]
 
 
-def getTrainData():
-    return torch.randn(30,300, 21)
-    
-    
-
-def getTestData():
-    return torch.randn(10, 300, 21)
-
-
+#preprocess data
+print(train_dataset.shape)
+print(valid_dataset.shape)
+print(test_dataset.shape)
 
     
-    
+
+'''
 # Device config
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -55,7 +56,7 @@ test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
                                           batch_size=batch_size, 
                                           shuffle=True)
 
-
+(model.eval Modus)
 # Convolutional neural network
 class ConvNet(nn.Module):
     def __init__(self, num_classes):
@@ -147,7 +148,7 @@ with torch.no_grad():
 # Save the model checkpoint and graphs
 #torch.save(model.state_dict(), 'model.ckpt')
 
-
+'''
 
 
 
