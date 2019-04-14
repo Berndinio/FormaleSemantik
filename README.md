@@ -104,8 +104,10 @@ To train the convolutional models, follow these steps:
 (or change the amount value to train on only a part of the dataset)
 
 
-*train,valuate and test CNNs
-"python CNN.py"
+* train,valuate and test CNNs
+```
+python CNN.py
+```
 (parameters can by changed directly in the CNN.py file)
 As default this will train the data and saves a graph for loss and acc for the training AND validation for every epoch.
 
