@@ -1,10 +1,10 @@
 #my own ignores
 GoogleNews-vectors-negative300.bin
-enwiki.skip.size300.win10.neg15.sample1e-5.min15.bin
-producedData
+enwiki*.bin
+producedData/*
 !producedData/__init__.py
 
-
+models/min*
 
 
 
