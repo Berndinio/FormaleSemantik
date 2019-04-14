@@ -108,3 +108,16 @@ in this project we also trained a CNN with input: sub,obj,shortest dependency pa
 
 
 ## FC models
+
+* Execute
+```
+python -m FC.py
+```
+
+to train the model. The default is setup to train with two relations only.
+
+It uses six fully connected layers and a softmax layer at the end. It uses
+stochastic gradient descent to update the weights (lr = 1) and negative log
+likelihood loss.
+
+As input it uses the same a the recurrent model.
