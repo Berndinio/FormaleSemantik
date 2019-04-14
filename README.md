@@ -15,20 +15,33 @@ For example if you want to start the model/preprocessing.py ```if __name__ == '_
 python -m model.preprocessing
 ```
 
+## Team
+Jan Sieber, Johannes Daub, Robin Ruland
+
+## Environment
+Python 3.5
 
 ## Dataset
 [FewRel](https://www.researchgate.net/publication/328494683_FewRel_A_Large-Scale_Supervised_Few-Shot_Relation_Classification_Dataset_with_State-of-the-Art_Evaluation) Dataset
 
 ## Word2Vec
-Pretrained Word2Vec model can be downloaded [here](https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM/edit).
+**Our own trained models have huge sizes (6GB). We can give you the pretrained models on HDD or something. We will try to upload it into the CL Pool account.**
+
+A pretrained Word2Vec model from Google can be downloaded [here](https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM/edit).
 
 **Additionally** we trained our own word2vec models on Wikidata with
 [this](https://github.com/jind11/word2vec-on-wikipedia) repo
-, because many words were unknown in the pretrained model above.
+, because many words were unknown in the pretrained model above. The repo is in our word2vec folder of our project.
+
 The [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/index.html#download) server will be needed to use this trainer. Start it with
 ```
 java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
 ```
+
+After the server has started, you just can start the run.sh from the repo. See the Repo description [here](https://github.com/jind11/word2vec-on-wikipedia).
+You may need to "make" the repo.
+**FINALLY** you need to copy the word2vec/word2vec/results into the models/ folder.
+
 
 ## Recurrent models
 Papers read for the RNN models:
@@ -96,8 +109,10 @@ To train the convolutional models, follow these steps:
 (or change the amount value to train on only a part of the dataset)
 
 
-*train,valuate and test CNNs
-"python CNN.py"
+* train,valuate and test CNNs
+```
+python CNN.py
+```
 (parameters can by changed directly in the CNN.py file)
 As default this will train the data and saves a graph for loss and acc for the training AND validation for every epoch.
 

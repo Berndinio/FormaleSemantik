@@ -1,3 +1,6 @@
+#Jan Sieber, 3219317
+
+
 from os import walk
 from Variables import Variables
 import re

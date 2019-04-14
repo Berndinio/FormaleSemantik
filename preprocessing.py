@@ -1,3 +1,6 @@
+#Jan Sieber, 3219317
+
+
 import warnings
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 import json

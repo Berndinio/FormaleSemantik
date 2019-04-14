@@ -1,4 +1,6 @@
 #According to paper https://www.aclweb.org/anthology/P16-2034
+#Jan Sieber, 3219317
+
 
 import torch
 import torch.nn as nn

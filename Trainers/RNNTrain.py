@@ -1,3 +1,6 @@
+#Jan Sieber, 3219317
+
+
 from preprocessing import DataProcessing
 from DatasetClasses.RNNDataset import RNNDataset
 from models.RNNModel import AttentionLSTM_NoDropoutNoNorm
