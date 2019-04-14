@@ -15,7 +15,7 @@ class AttentionLSTM_NoDropoutNoNorm(nn.Module):
                                 num_layers=1, dropout=0.0, bidirectional=True,
                                 batch_first=True)
         self.tanh = nn.Tanh()
-        self.fc = nn.Linear(300, 80)
+        self.fc = nn.Linear(300, 81)
         self.conv1d = nn.Conv1d(self.hiddenSizeLSTM, 1, 1,bias=False)
         self.softmax2 = nn.Softmax(dim=2)
         self.softmax1 = nn.Softmax(dim=1)
@@ -70,7 +70,7 @@ class AttentionLSTM_NoNorm(nn.Module):
                                 num_layers=1, dropout=0.0, bidirectional=True,
                                 batch_first=True)
         self.tanh = nn.Tanh()
-        self.fc = nn.Linear(300, 80)
+        self.fc = nn.Linear(300, 81)
         self.conv1d = nn.Conv1d(self.hiddenSizeLSTM, 1, 1,bias=False)
         self.softmax2 = nn.Softmax(dim=2)
         self.softmax1 = nn.Softmax(dim=1)
@@ -137,7 +137,7 @@ class AttentionLSTM_NoDropout(nn.Module):
                                 num_layers=1, dropout=0.0, bidirectional=True,
                                 batch_first=True)
         self.tanh = nn.Tanh()
-        self.fc = nn.Linear(300, 80)
+        self.fc = nn.Linear(300, 81)
         self.conv1d = nn.Conv1d(self.hiddenSizeLSTM, 1, 1,bias=False)
         self.softmax2 = nn.Softmax(dim=2)
         self.softmax1 = nn.Softmax(dim=1)
@@ -203,7 +203,7 @@ class AttentionLSTM(nn.Module):
                                 num_layers=1, dropout=0.0, bidirectional=True,
                                 batch_first=True)
         self.tanh = nn.Tanh()
-        self.fc = nn.Linear(300, 80)
+        self.fc = nn.Linear(300, 81)
         self.conv1d = nn.Conv1d(self.hiddenSizeLSTM, 1, 1,bias=False)
         self.softmax2 = nn.Softmax(dim=2)
         self.softmax1 = nn.Softmax(dim=1)

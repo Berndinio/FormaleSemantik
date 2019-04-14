@@ -3,7 +3,7 @@ GoogleNews-vectors-negative300.bin
 enwiki*.bin
 producedData/*
 !producedData/__init__.py
-
+models/dummy*
 models/min*
 
 
