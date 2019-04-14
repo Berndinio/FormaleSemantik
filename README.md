@@ -78,6 +78,33 @@ to generate the classification accuracy plots.
 
 
 ## Convolutional models
+Papers read for the CNN models:
+
+1. [Semantic Relation Classification via Convolutional Neural Networks with
+Simple Negative Sampling](https://arxiv.org/abs/1506.07650)
+
+2. [Relation Classification via Convolutional Deep Neural Network](https://www.aclweb.org/anthology/C14-1220) (main paper)
+
+3. [Combining Recurrent and Convolutional Neural Networks
+for Relation Classification](https://arxiv.org/abs/1605.07333)
+
+
+To train the convolutional models, follow these steps:
+
+* Download the dataset:
+"python -m preprocessing -generate 1 -amount 56000 -prefix dummy"
+(or change the amount value to train on only a part of the dataset)
+
+
+*train,valuate and test CNNs
+"python CNN.py"
+(parameters can by changed directly in the CNN.py file)
+As default this will train the data and saves a graph for loss and acc for the training AND validation for every epoch.
+
+Default:
+- CNN with input: sub,obj emembeddings
+
+in this project we also trained a CNN with input: sub,obj,shortest dependency path emembeddings
 
 
 ## FC models

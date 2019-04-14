@@ -94,20 +94,20 @@ class ConvNet(nn.Module):
     def __init__(self, num_classes):
         super(ConvNet, self).__init__()
         self.layer1 = nn.Sequential(
-            nn.Conv2d(inputCnn,16, (10,numWordsForInput)),
+            nn.Conv2d(1,16, (10,numWordsForInput)),
             nn.BatchNorm2d(16),
             nn.ReLU())
             #nn.MaxPool2d(kernel_size=2, stride=2))
         self.layer2 = nn.Sequential(
-            nn.Conv2d(16, 32, kernel_size=(10,numWordsForInput)),
+            nn.Conv2d(16, 32, kernel_size=(10,1)),
             nn.BatchNorm2d(32),
             nn.ReLU())
         self.layer3 = nn.Sequential(
-            nn.Conv2d(16, 64, kernel_size=(10,numWordsForInput)),
-            nn.BatchNorm2d(64),
+            nn.Conv2d(32, 32, kernel_size=(10,1)),
+            nn.BatchNorm2d(32),
             nn.ReLU())
             #nn.MaxPool2d(kernel_size=2, stride=2))
-        self.fc1 = nn.Linear(10*numWordsForInput*64, 40)
+        self.fc1 = nn.Linear(873600,40)#10*numWordsForInput*64, 40)
         self.dropout = nn.Dropout(0.45)
         self.fc2 = nn.Linear(40, num_classes)
         self.dropout = nn.Dropout(0.45)
@@ -117,7 +117,7 @@ class ConvNet(nn.Module):
         out = self.layer1(x)
         out = self.layer2(out)
         out = self.layer3(out)
-        out = out.view(-1, 64*10*numWordsForInput*64)
+        out = out.view(-1, 873600)#64*10*numWordsForInput*64)
         a = torch.squeeze(out)
         out = self.fc1(out)
         out = self.fc2(out)
@@ -132,7 +132,7 @@ class ConvNet(nn.Module):
 #main
 
 cnn1 = True
-usedDataSet = "dummy"
+usedDataSet = "dummy2"
 
 
 
@@ -157,7 +157,7 @@ print(test_dataset.shape)
 samplesize_train = list(train_dataset.size())[0]
 samplesize_val = list(valid_dataset.size())[0]
 samplesize_test = list(test_dataset.size())[0]
-print(samplesize)
+print(samplesize_train)
 
 if cnn1:
     temp = torch.zeros(samplesize_train, 300, 3)
@@ -200,6 +200,11 @@ else:
 print(train_dataset.shape)
 print(valid_dataset.shape)
 print(test_dataset.shape)
+
+train_dataset = train_dataset[:, None, :, :]
+valid_dataset = valid_dataset[:, None, :, :]
+test_dataset = test_dataset[:, None, :, :]
+
 
 # Device config
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -253,11 +258,10 @@ running_corrects = 0
 for epoch in range(num_epochs):
     for i, data in enumerate(train_loader, 0):
         #print(i)
-        images = data[:,:,:-1]
-        labels = data[:, :, -1]
+        images = data[:,:,:,:-1]
+        labels = data[:, :,:, -1]
         
         #print(data.shape)
-        #print(images.shape)
         #print(labels.shape)
         #images = np.expand_dims(images, axis=1)
         #labels = np.expand_dims(labels, axis=1)
@@ -268,6 +272,8 @@ for epoch in range(num_epochs):
         # Forward pass
         outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
+        print(labels.shape)
+        print(outputs.shape)
         loss = criterion(outputs, labels)
         
         # Backward and optimize
@@ -297,8 +303,8 @@ def evaluate():
     total = 0
     with torch.no_grad():
         for data in val_loader:
-            images = data[:,:,:-1]
-            labels = data[:, :, -1]
+            images = data[:,:,:,:-1]
+            labels = data[:, :,:, -1]
             
             images = images.to(device)
             labels = labels.to(device)
@@ -324,8 +330,8 @@ def test():
     total = 0
     with torch.no_grad():
         for data in test_loader:
-            images = data[:,:,:-1]
-            labels = data[:, :, -1]
+            images = data[:,:,:,:-1]
+            labels = data[:, :,:, -1]
             
             images = images.to(device)
             labels = labels.to(device)
