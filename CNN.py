@@ -115,13 +115,23 @@ class ConvNet(nn.Module):
     
     def forward(self, x):
         out = self.layer1(x)
+        print("test2")
+        print(out.shape)
         out = self.layer2(out)
         out = self.layer3(out)
-        out = out.view(-1, 873600)#64*10*numWordsForInput*64)
+        print("test")
+        print(out.shape)
+        #out = out.view(-1, 873600)#64*10*numWordsForInput*64)
         a = torch.squeeze(out)
+        print("test2")
+        print(out.shape)
         out = self.fc1(out)
         out = self.fc2(out)
+        print("test2")
+        print(out.shape)
         out = self.softmax(out)
+        print("test2")
+        print(out.shape)
         return out
 
 
@@ -211,7 +221,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # Hyper parameters
 num_epochs = 100
-num_classes = 80
+num_classes = 81
 batch_size = 100
 learning_rate = 0.0015
 if cnn1:
@@ -260,12 +270,13 @@ for epoch in range(num_epochs):
         #print(i)
         images = data[:,:,:,:-1]
         labels = data[:, :,:, -1]
-        
+        labels = torch.tensor(labels, dtype=torch.long, device=device)
         #print(data.shape)
         #print(labels.shape)
         #images = np.expand_dims(images, axis=1)
         #labels = np.expand_dims(labels, axis=1)
-        
+        labels = torch.squeeze(labels)
+        labels = labels[:, :81]
         images = images.to(device)
         labels = labels.to(device)
         
@@ -273,7 +284,9 @@ for epoch in range(num_epochs):
         outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
         print(labels.shape)
+        print(images.shape)
         print(outputs.shape)
+        
         loss = criterion(outputs, labels)
         
         # Backward and optimize
