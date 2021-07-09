@@ -1,4 +1,8 @@
-# FormaleSemantik
+# FormaleSemantik 
+## Task 
+Relation Classification
+
+## Structure
 **Every folder must contain a __init__.py**.
 
 Start programs in root folder with
